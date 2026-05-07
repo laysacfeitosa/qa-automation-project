@@ -36,6 +36,9 @@ class BasePage:
         except Exception:
             return False
 
+    def is_present(self, locator: tuple[str, str]) -> bool:
+        return len(self.driver.find_elements(*locator)) > 0
+
     def find_all(self, locator: tuple[str, str]):
         self.wait.until(EC.presence_of_element_located(locator))
         return self.driver.find_elements(*locator)

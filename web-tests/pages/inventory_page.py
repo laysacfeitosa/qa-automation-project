@@ -28,9 +28,10 @@ class InventoryPage(BasePage):
         self.click(button)
 
     def get_cart_badge_count(self) -> int:
-        if not self.is_visible(self.SHOPPING_CART_BADGE):
+        elements = self.driver.find_elements(*self.SHOPPING_CART_BADGE)
+        if not elements:
             return 0
-        return int(self.get_text(self.SHOPPING_CART_BADGE))
+        return int(elements[0].text)
 
     def open_cart(self):
         self.click(self.SHOPPING_CART_LINK)
