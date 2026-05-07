@@ -1,0 +1,66 @@
+name: Web Tests - SauceDemo
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'web-tests/**'
+      - '.github/workflows/web-tests.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'web-tests/**'
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * 1'
+
+jobs:
+  web-tests:
+    name: SauceDemo Web Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./web-tests
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: 'web-tests/requirements.txt'
+
+      - name: Setup Chrome
+        uses: browser-actions/setup-chrome@v1
+        with:
+          chrome-version: stable
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run Web tests
+        run: pytest tests/ --html=reports/report.html --self-contained-html
+        env:
+          HEADLESS: "true"
+          SAUCEDEMO_URL: https://www.saucedemo.com/
+
+      - name: Upload HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-test-report
+          path: web-tests/reports/
+          retention-days: 30
+
+      - name: Upload screenshots on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-test-screenshots
+          path: web-tests/reports/screenshots/
+          retention-days: 30
